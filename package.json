@@ -1,0 +1,21 @@
+{
+  "name": "talk-to-the-quran",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "langchain": "^0.0.11",
+    "openai": "^3.1.0",
+    "tslog": "^4.7.5",
+    "typescript": "^4.9.5",
+    "dotenv": "^16.0.3"
+  },
+  "devDependencies": {
+    "@types/dotenv": "^8.2.0",
+    "@types/node": "^18.14.1",
+    "ts-node": "^10.9.1"
+  },
+  "scripts": {
+    "start": "ts-node src/index.ts"
+  }
+}
