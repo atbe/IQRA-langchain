@@ -2,12 +2,10 @@ import { Logger } from "tslog";
 
 import { OpenAI } from "langchain/llms";
 
-import { ConversationChain, VectorDBQAChain } from "langchain/chains";
+import { VectorDBQAChain } from "langchain/chains";
 import { TextLoader } from "langchain/document_loaders";
 import { OpenAIEmbeddings } from "langchain/embeddings";
-import { BufferMemory } from "langchain/memory";
 import { CharacterTextSplitter } from "langchain/text_splitter";
-import { Chroma } from "langchain/vectorstores";
 import { HNSWLib } from "langchain/vectorstores";
 
 import { config } from "dotenv";
@@ -35,30 +33,6 @@ const loadData = async () => {
   return splitDocuments.slice(0, DOCUMENT_LIMIT);
 };
 
-const runConversationLoop = async () => {
-  const model = new OpenAI({
-    openAIApiKey: process.env.OPENAI_API_KEY,
-  });
-  const memory = new BufferMemory();
-  const chain = new ConversationChain({ llm: model, memory: memory });
-
-  while (true) {
-    // take input from CLI
-    console.log("Enter input: ");
-
-    const input = await new Promise((resolve) => {
-      process.stdin.resume();
-      process.stdin.setEncoding("utf8");
-      process.stdin.on("data", (text) => {
-        resolve(text);
-      });
-    });
-
-    const res = await chain.call({ input });
-    console.log({ res });
-  }
-};
-
 const run = async () => {
   logger.info("Starting up");
 
@@ -73,9 +47,20 @@ const run = async () => {
   //   const search = await Chroma.fromDocuments(docs, embeddings);
   const search = await HNSWLib.fromDocuments(docs, embeddings);
   logger.info("Chroma search initialized");
-  const model = new OpenAI({
-    openAIApiKey: process.env.OPENAI_API_KEY,
-  });
+  const model = new OpenAI(
+    {
+      openAIApiKey: process.env.OPENAI_API_KEY,
+    },
+    {
+      basePath: "https://oai.hconeai.com/v1",
+      baseOptions: {
+        headers: {
+          "Helicone-Cache-Enabled": "true",
+        },
+      },
+    }
+  );
+
   logger.info("Initializing VectorDBQAChain");
   const chain = VectorDBQAChain.fromLLM(model, search);
   logger.info("VectorDBQAChain initialized");
